@@ -10,18 +10,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-
 func main() {
-  godotenv.Load()
+	godotenv.Load()
 
-  router := mux.NewRouter()
+	router := mux.NewRouter()
 
-  routes.Routes(router)
-  models.ConnectDatabase()
-  
-  // Start the server
-  fmt.Println("Server listening on port 8080")
-  http.ListenAndServe(":8080", router)
+	routes.Routes(router)
+	models.ConnectDatabase()
 
+	// Start the server
+	fmt.Println("Server listening on port 8080")
+	http.ListenAndServe(":8080", router)
 
 }

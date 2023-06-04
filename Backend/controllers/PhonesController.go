@@ -3,9 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/frsargua/NewPriceLogger/Backend/models"
 	"github.com/go-playground/validator"
@@ -115,6 +115,8 @@ func (pc *PhonesController) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(phone)
+
 	// Validate brand field
 	err = validatePhone(phone)
 
@@ -163,11 +165,11 @@ func validatePhone(phone models.Phone) error {
 
 	err := validate.Struct(phone)
 	if err != nil {
-		var validationErrors []string
-		for _, err := range err.(validator.ValidationErrors) {
-			validationErrors = append(validationErrors, err.Error())
-		}
-		return errors.New(strings.Join(validationErrors, ", "))
+		// 	var validationErrors []string
+		// 	for _, err := range err.(validator.ValidationErrors) {
+		// 		validationErrors = append(validationErrors, err.Error())
+		// 	}
+		// 	return errors.New(strings.Join(validationErrors, ", "))
 	}
 
 	return nil
@@ -178,7 +180,7 @@ func validateId(phoneId string) error {
 		return errors.New("Missing or empty Id")
 	}
 
-	if _, err := strconv.Atoi(phoneId); err == nil {
+	if _, err := strconv.Atoi(phoneId); err != nil {
 		return errors.New("Invalid Id format")
 	}
 

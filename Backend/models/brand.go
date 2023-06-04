@@ -3,8 +3,9 @@ package models
 import "time"
 
 type Brand struct {
-	ID        uint   `gorm:"primary_key"`
+	ID        int    `gorm:"primary_key"`
 	Brand     string `gorm:"unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Phones    []Phone `gorm:"foreignKey:BrandName;references:Brand"`
 }

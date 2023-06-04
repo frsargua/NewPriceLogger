@@ -7,11 +7,12 @@ import (
 )
 
 type Price struct {
-	ID        uint `gorm:"primary_key"`
-	ModelID   uint
+	ID        int `gorm:"primary_key"`
+	ModelID   int
 	DateAdded time.Time
 	Price     float64
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Model     Phone `gorm:"foreignkey:ModelID"`
 }
+
+// Model     Phone `gorm:"foreignkey:ModelID"`

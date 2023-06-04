@@ -22,12 +22,11 @@ func Routes(router *mux.Router) {
 	// PricesController routes
 	priceController := controllers.PricesController{}
 	priceRouter := router.PathPrefix("/prices").Subrouter()
-	priceRouter.HandleFunc("", priceController.Show).Methods("GET")
 	priceRouter.HandleFunc("/{id}", priceController.ShowID).Methods("GET")
-	priceRouter.HandleFunc("/price/{id}", priceController.ShowSinglePrice).Methods("GET")
-	priceRouter.HandleFunc("/price/{phoneId}/{id}", priceController.Update).Methods("PUT")
-	priceRouter.HandleFunc("/price", priceController.Store).Methods("POST")
-	priceRouter.HandleFunc("/price/{id}", priceController.Destroy).Methods("DELETE")
+	priceRouter.HandleFunc("/single/{id}", priceController.ShowSinglePrice).Methods("GET")
+	priceRouter.HandleFunc("/update/{id}", priceController.Update).Methods("PUT")
+	priceRouter.HandleFunc("/store", priceController.Store).Methods("POST")
+	priceRouter.HandleFunc("/delete/{id}", priceController.Destroy).Methods("DELETE")
 
 	// BrandControllers routes
 	brandController := controllers.BrandControllers{}
