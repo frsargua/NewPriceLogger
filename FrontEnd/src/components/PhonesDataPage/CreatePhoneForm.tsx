@@ -6,6 +6,7 @@ import axios from "axios";
 import { createPhone, createPrice } from "../../utils/URIs";
 import { NewPhoneProps } from "../../types/generalTypes";
 import ErrorText from "../shared/ErrorText";
+import Chat from "./Chat";
 
 export default function CreatePhoneForm() {
   const { brands } = useContext(BrandsContext);
@@ -66,8 +67,11 @@ export default function CreatePhoneForm() {
 
       setError(false);
     } catch (err: any) {
+      console.log(err);
       if (err.response?.status === 422) {
         setError(err.response.data.message);
+      } else {
+        setError(err.response.data);
       }
     }
   };
@@ -86,8 +90,7 @@ export default function CreatePhoneForm() {
         </div>
       </div>
 
-      {isFormVisible && (
-        <form onSubmit={handleSubmit} className="row g-3 align-items-center">
+      {isFormVisible && (<>       <form onSubmit={handleSubmit} className="row g-3 align-items-center">
           <div className="col-md-3">
             <label htmlFor="brandSelect" className="form-label">
               Brand
@@ -164,6 +167,9 @@ export default function CreatePhoneForm() {
             </button>
           </div>
         </form>
+          <Chat/>
+        </>
+ 
       )}
 
       {error && <ErrorText errorMessage={error} />}

@@ -9,7 +9,8 @@ import (
 type Phone struct {
 	ID           int `gorm:"primary_key"`
 	BrandName    string
-	Model        string    `gorm:"unique"`
+	Model        string   
+	ImageUrl      string   `validate:"required"`
 	ReleaseDate  time.Time `validate:"required"`
 	ReleasePrice float64   `validate:"required,min=10,max=3000"`
 	CreatedAt    time.Time

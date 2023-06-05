@@ -32,6 +32,8 @@ export default function BrandCreationPage() {
     } catch (err: any) {
       if (err.response.status === 422) {
         setError(err.response.data.message);
+      } else {
+        setError(err.response.data);
       }
     }
   };

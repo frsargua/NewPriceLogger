@@ -54,11 +54,11 @@ export default function PhoneUpdatePage() {
       } else {
         throw new Error("id not provided");
       }
-    } catch (err) {
+    } catch (err: any) {
       if (err.response?.status === 422) {
         setError(err.response.data.message);
       } else {
-        console.error(err);
+        setError(err.response.data);
       }
     }
   };
@@ -126,6 +126,7 @@ export default function PhoneUpdatePage() {
             id="release_price"
             name="ReleasePrice"
             type="text"
+            min={10}
             value={phoneFields.ReleasePrice}
             onChange={handleChange}
           />

@@ -53,9 +53,10 @@ export default function PriceUpdatePage() {
       setError(false);
       navigate(`/prices/${model}/${phoneId}`, { replace: true });
     } catch (err: any) {
+      console.log(err);
       if (err.response.status === 422) {
         setError(err.response.data.message);
-      }
+      } else setError(err.response.data);
     }
   }
 

@@ -30,6 +30,9 @@ export function updatePhoneById(phoneId: string): string {
 export function deletePhoneById(phoneId: string): string {
   return `${base}/phones/${phoneId}`;
 }
+export function getChats(): string {
+  return `${base}/phones/chat`;
+}
 
 // Prices table URIsw
 

@@ -1,18 +1,32 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
+	firebase "firebase.google.com/go"
 	"github.com/frsargua/NewPriceLogger/Backend/models"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
+	"github.com/sashabaranov/go-openai"
+	"google.golang.org/api/option"
 )
 
-type PhonesController struct{}
+type PhonesController struct {
+	App *firebase.App
+}
+
+type PhoneModel struct {
+	Model string `json:"content"`
+}
 
 func (pc *PhonesController) Show(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -80,6 +94,12 @@ func (pc *PhonesController) Update(w http.ResponseWriter, r *http.Request) {
 	var updatedPhone models.Phone
 	err := json.NewDecoder(r.Body).Decode(&updatedPhone)
 	if err != nil {
+		http.Error(w, "Fail to get body", http.StatusBadRequest)
+		return
+	}
+	err = validatePhone(updatedPhone)
+
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -125,25 +145,115 @@ func (pc *PhonesController) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    if err := models.DB.Create(&phone).Error; err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	if err := models.DB.Create(&phone).Error; err != nil {
+		http.Error(w, "Phone model might not be unique", http.StatusInternalServerError)
+		return
+	}
 
-    // Return the created phone in the response
-    response, err := json.Marshal(phone)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
+	// Return the created phone in the response
+	response, err := json.Marshal(phone)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+func (pc *PhonesController) UploadImage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	file, fileHeader, err := r.FormFile("image")
+
+	if err != nil {
+		http.Error(w, "Failed to get filed to be uploaded", http.StatusBadRequest)
+		return
+	}
+	fileName := fileHeader.Filename
+
+	client, err := pc.App.Storage(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to initialize Firebase Storage client", http.StatusInternalServerError)
+		return
+	}
+
+	bucket, err := client.DefaultBucket()
+	if err != nil {
+		http.Error(w, "Failed to get default bucket", http.StatusInternalServerError)
+		return
+	}
+
+	obj := bucket.Object(fileName)
+
+	wc := obj.NewWriter(r.Context())
+	defer wc.Close()
+
+	_, err = io.Copy(wc, file)
+	if err != nil {
+		http.Error(w, "Failed to upload image", http.StatusInternalServerError)
+		return
+	}
+
+	attrs, err := obj.Attrs(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to get object attributes", http.StatusInternalServerError)
+		return
+	}
+
+	imageURL := attrs.MediaLink
+
+	log.Printf("Image uploaded: %s", imageURL)
+
+	// Send a response with the image URL
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(imageURL))
+}
+
+func (pc *PhonesController) WhatIsThe(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var phoneModel PhoneModel
+	err := json.NewDecoder(r.Body).Decode(&phoneModel)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	client := openai.NewClient(os.Getenv("OPEN_AI"))
+
+	content := fmt.Sprintf(`what was the release price of a %s? Just give me the UK price in a short prompt.`, phoneModel.Model)
+	fmt.Println(content)
+
+	resp, err := client.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+		Model: openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{{
+			Role:    openai.ChatMessageRoleUser,
+			Content: content,
+		}},
+	})
+
+	if err != nil {
+		fmt.Printf("ChatCompletion error: %v\n", err)
+		return
+	}
+
+	response := struct {
+		Message string `json:"message"`
+	}{
+		Message: resp.Choices[0].Message.Content,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		fmt.Printf("JSON marshal error: %v\n", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}
 
 func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	println("Hey")
 	vars := mux.Vars(r)
 	phoneID := vars["id"]
@@ -153,22 +263,31 @@ func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-println("one")
+	println("one")
 
 	if err := models.DB.First(&existingPhone, phoneID).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-println("two")
+	println("two")
 	if err := models.DB.Delete(&existingPhone).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	println("three")
-	// json.NewEncoder(w).Encode(existingPhone)
-		w.WriteHeader(http.StatusOK)	
+	w.WriteHeader(http.StatusOK)
 
+}
+
+func (pc *PhonesController) InitialiseFirebase() {
+
+	opt := option.WithCredentialsFile("./serviceAccountKey.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	pc.App = app
 }
 
 func validatePhone(phone models.Phone) error {
@@ -176,11 +295,11 @@ func validatePhone(phone models.Phone) error {
 
 	err := validate.Struct(phone)
 	if err != nil {
-		// 	var validationErrors []string
-		// 	for _, err := range err.(validator.ValidationErrors) {
-		// 		validationErrors = append(validationErrors, err.Error())
-		// 	}
-		// 	return errors.New(strings.Join(validationErrors, ", "))
+		var validationErrors []string
+		for _, err := range err.(validator.ValidationErrors) {
+			validationErrors = append(validationErrors, err.ActualTag())
+		}
+		return errors.New(strings.Join(validationErrors, ", "))
 	}
 
 	return nil
@@ -196,4 +315,8 @@ func validateId(phoneId string) error {
 	}
 
 	return nil
+}
+func convertString(input string) string {
+	converted := strings.ReplaceAll(input, "-", " ")
+	return converted
 }

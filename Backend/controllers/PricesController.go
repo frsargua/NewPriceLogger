@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/frsargua/NewPriceLogger/Backend/models"
@@ -84,11 +86,24 @@ func (pc *PricesController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updatedPrice models.Price
+
+
+
 	err := json.NewDecoder(r.Body).Decode(&updatedPrice)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println(updatedPrice)
+
+	err = validatePrice(updatedPrice)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 
 	var existingPrice models.Price
 	if err := models.DB.First(&existingPrice, priceID).Error; err != nil {
@@ -121,6 +136,8 @@ func (pc *PricesController) Store(w http.ResponseWriter, r *http.Request) {
 
 	// Validate brand field
 	err = validatePrice(phonePrice)
+
+	fmt.Println(err);
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -161,16 +178,24 @@ func (pc *PricesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(existingPrice)
 }
 
-func validatePrice(phone models.Price) error {
+func validatePrice(price models.Price) error {
 	validate := validator.New()
 
-	err := validate.Struct(phone)
+	err := validate.Struct(price)
 	if err != nil {
-		// var validationErrors []string
-		// for _, err := range err.(validator.ValidationErrors) {
-		// 	validationErrors = append(validationErrors, err.Error())
-		// }
-		// return errors.New(strings.Join(validationErrors, ", "))
+		var errorMessages []string
+		for _, err := range err.(validator.ValidationErrors) {
+			// fieldName := err.StructField()
+			errMessage := err.Tag()
+
+			// Retrieve the custom error message if available
+			if customErr, ok := err.(validator.FieldError); ok {
+				errMessage = customErr.ActualTag()
+			}
+			errorMessages = append(errorMessages, errMessage)
+		}
+		fmt.Println(errorMessages)
+		return errors.New(errorMessages[0])
 	}
 
 	return nil
