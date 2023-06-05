@@ -1,0 +1,29 @@
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.navbar-brand .brand-text {
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.navbar-toggler {
+  border: none;
+  background: transparent;
+}
+
+.navbar-toggler-icon {
+  background-image: url("path/to/hamburger-icon.png");
+}
+
+.navbar-nav .nav-item {
+  margin-right: 1rem;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+}

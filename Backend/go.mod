@@ -44,6 +44,7 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/rs/cors v1.9.0
 	github.com/stretchr/testify v1.8.3 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
