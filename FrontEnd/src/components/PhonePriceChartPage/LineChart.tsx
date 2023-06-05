@@ -32,6 +32,12 @@ export const options: ChartOptions<"line"> = {
   scales: {
     y: {
       title: { display: true, text: "Percentage" },
+      ticks: {
+        color: "#6c757d",
+      },
+      grid: {
+        color: "rgba(108, 117, 125, 0.1)",
+      },
     },
     x: {
       type: "time",
@@ -41,6 +47,13 @@ export const options: ChartOptions<"line"> = {
       title: {
         display: true,
         text: "Date",
+        font: { size: 14, weight: "bold" },
+      },
+      grid: {
+        color: "rgba(108, 117, 125, 0.1)",
+      },
+      ticks: {
+        color: "#6c757d",
       },
     },
   },
@@ -57,14 +70,18 @@ function LineChart(props: Props): React.ReactElement {
       {
         label: "name",
         data: devaluationData,
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        borderColor: "rgb(75, 192, 192)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        pointBackgroundColor: "rgba(75, 192, 192, 1)",
+        pointBorderColor: "#ffffff",
+        pointHoverBackgroundColor: "#ffffff",
+        pointHoverBorderColor: "rgba(75, 192, 192, 1)",
       },
     ],
   };
   return (
-    <div className="container" style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <Line options={options} data={data} />;
+    <div className="container" style={{ maxWidth: "1000px", margin: "0 auto" }}>
+      <Line options={options} data={data} />
     </div>
   );
 }

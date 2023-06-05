@@ -22,7 +22,7 @@ export default function PhonePriceChartPage() {
     <>
       <h1 className="text-center mb-4">{model} Prices</h1>
 
-      <div className="mb-5" style={{ height: "200px" }}>
+      <div className="mb-5">
         <LineChart
           devaluationData={phonePrices.map((el, i, arr) => {
             return {

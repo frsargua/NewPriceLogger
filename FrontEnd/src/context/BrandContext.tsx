@@ -6,19 +6,21 @@ import { getBrands } from "../utils/URIs";
 export const BrandsContext = createContext<BrandsContextProps>({
   brands: [],
   fetchBrands: () => {},
+  error: null,
 });
-
-// type BrandsProviderProps = {
-//   children: React.ReactNode;
-// };
 
 export function BrandsProvider({ children }: { children: React.ReactNode }) {
   const [brands, setBrands] = useState<BrandsProps[]>([]);
+  const [error, setError] = useState<null | Error>(null);
 
   // Function to fetch the brands data asynchronously
   async function fetchBrands() {
-    const data = await fetchData(getBrands());
-    setBrands(data.brands);
+    try {
+      const data = await fetchData(getBrands());
+      setBrands(data.brands);
+    } catch (err: any) {
+      setError(err);
+    }
   }
 
   // useEffect hook to fetch brands data when the component mounts
@@ -29,6 +31,7 @@ export function BrandsProvider({ children }: { children: React.ReactNode }) {
   const value: BrandsContextProps = {
     brands,
     fetchBrands,
+    error,
   };
 
   return (

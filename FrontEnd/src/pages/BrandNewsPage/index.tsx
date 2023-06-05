@@ -1,60 +1,94 @@
-import { NewsCard } from "../../components/BrandNewsPage/NewsCard";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
 import { ArticleType, TopicParams } from "../../types/generalTypes";
-import React from "react";
-import { useEffect } from "react";
-import axios from "axios";
+import { NewsCard } from "../../components/BrandNewsPage/NewsCard";
 
 export default function BrandNewsPage() {
   const { topic } = useParams<keyof TopicParams>() as TopicParams;
-  const [news, setNews] = React.useState<ArticleType[]>([]);
+  const [news, setNews] = useState<ArticleType[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  async function fetchNews() {
-    var options = {
+  async function fetchNews(page) {
+    const options = {
       method: "GET",
       url: "https://api.newscatcherapi.com/v2/search",
       params: {
         q: `${topic}`,
         lang: "en",
         sort_by: "relevancy",
-        page: "1",
+        page: page,
         page_size: "10",
       },
       headers: {
-        "x-api-key": "EUr2PGWNd4xfAfwdH1x_K3rIb8aFog_9HhOu2aClLFs",
+        "x-api-key": "RQNBG6JSvwgi3hBe9FhLGHBTeBSusR1-KY_iehT1_lU",
       },
     };
 
-    axios
-      .request(options)
-      .then(function (response) {
-        console.log(response.data.articles);
-        setNews(response.data.articles);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    try {
+      const response = await axios.request(options);
+
+      setNews(response.data.articles);
+      setTotalPages(response.data.total_pages);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   useEffect(() => {
-    fetchNews();
+    fetchNews(currentPage);
 
     return;
-  }, []);
+  }, [currentPage]);
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
+  };
 
   return (
     <>
       <h1 className="mb-4 text-center">News of {topic}</h1>
       <div className="row">
         {news.map((article, i) => (
-          <div className="col-md-4" key={i}>
-            <div className="card mb-3">
-              <div className="card-body">
-                <NewsCard data={article} />
-              </div>
+          <div className="col-xs-12 col-md-6 col-lg-4" key={i}>
+            <div className="pb-4 h-100">
+              <NewsCard data={article} />
             </div>
           </div>
         ))}
+      </div>
+      <div className="d-flex justify-content-center mt-4">
+        <nav aria-label="News Pagination">
+          <ul className="pagination">
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+            </li>
+            <li
+              className={`page-item ${
+                currentPage === totalPages ? "disabled" : ""
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </>
   );

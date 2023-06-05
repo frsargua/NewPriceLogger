@@ -7,31 +7,35 @@ import axios from "axios";
 import ErrorText from "../../components/shared/ErrorText";
 
 export default function BrandCreationPage() {
-  let [newBrand, setNewBrand] = useState("");
-  let [error, setError] = useState<string | boolean>(false);
+  const [newBrand, setNewBrand] = useState<string>("");
+  const [error, setError] = useState<string | boolean>(false);
+
   let { fetchBrands } = React.useContext(BrandsContext);
 
   const navigate = useNavigate();
 
-  const handleChange = (event: React.ChangeEvent<any>) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewBrand(event.target.value);
   };
 
-  async function handleSubmit(e: React.ChangeEvent<any>) {
-    e.preventDefault();
+  // Handler for form submission
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     try {
-      console.log(newBrand)
       await axios.post(createBrand(), { brand: newBrand.toLowerCase() });
+
+      // If successful, refresh the brands list and redirect to home page
       fetchBrands();
       setError(false);
       navigate(`/`, { replace: true });
-    } catch (err) {
+    } catch (err: any) {
       if (err.response.status === 422) {
         setError(err.response.data.message);
       }
     }
-  }
+  };
+
   return (
     <>
       <div className="container" style={{ maxWidth: "600px", height: "80vh" }}>
@@ -59,7 +63,7 @@ export default function BrandCreationPage() {
               onChange={handleChange}
             />
 
-            {error ? <ErrorText errorMessage={error} /> : ""}
+            {error && <ErrorText errorMessage={error} />}
             <button
               type="submit"
               className="btn btn-primary"

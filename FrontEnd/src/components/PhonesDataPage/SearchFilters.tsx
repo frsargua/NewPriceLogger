@@ -39,8 +39,7 @@ export default function SearchFilters() {
   };
 
   return (
-    <div className="container">
-      <h2 className="py-1">Filter</h2>
+    <div className="container mb-3">
       <form noValidate className="d-flex align-items-end">
         <div className="me-3">
           <label htmlFor="brandSelect" className="form-label">

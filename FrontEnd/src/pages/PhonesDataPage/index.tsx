@@ -7,8 +7,8 @@ export default function PhonesDataPage() {
     <>
       <h1 className="mb-6 fw-600 text-center">Table of phones models</h1>
       <CreatePhoneForm />
-      <SearchFilters />
       <h2 className="mb-2">Table</h2>
+      <SearchFilters />
       <PhonesDataTable />
     </>
   );

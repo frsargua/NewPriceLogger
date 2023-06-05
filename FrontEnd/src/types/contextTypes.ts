@@ -11,6 +11,7 @@ export type BrandsProps = BrandProps;
 export type BrandsContextProps = {
   brands: BrandProps[];
   fetchBrands: () => void;
+  error: null | Error;
 };
 
 // Types mainly used for the comparison useContext
@@ -51,6 +52,7 @@ export type PricesProps = {
 export type PricesContextProps = {
   phonePrices: PricesProps[];
   updatePhonePrices: (id: string) => void;
+  error: null | Error;
 };
 
 // Types mainly used for the phones useContext
@@ -115,28 +117,4 @@ export enum SortingType {
 export type TableColumn = {
   label: string;
   property: keyof TableData;
-};
-
-// Form props
-
-export type NewPhoneProps = {
-  brand_name: string;
-  release_date: Dayjs | string;
-  model: string;
-  release_price: number | null;
-};
-
-export type UpdatePhoneProps = {
-  brand_name: string;
-  model: string;
-  release_price: number;
-};
-
-export type ArticleType = {
-  topic?: string;
-  author?: string;
-  publishedAt?: Date;
-  source?: { Id: string; Name: string };
-  title?: string;
-  url?: string;
 };
