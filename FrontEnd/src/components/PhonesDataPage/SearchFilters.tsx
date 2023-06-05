@@ -54,8 +54,8 @@ export default function SearchFilters() {
           >
             <option value="">All Brands</option>
             {brands.map((el) => (
-              <option key={el.brand} value={el.brand}>
-                {el.brand}
+              <option key={el.Brand} value={el.Brand}>
+                {el.Brand}
               </option>
             ))}
           </select>

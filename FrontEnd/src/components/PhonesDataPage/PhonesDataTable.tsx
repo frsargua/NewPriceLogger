@@ -61,8 +61,8 @@ export default function PhonesDataTable() {
   }
 
   const tableColumn = [
-    { label: "Brand", property: "brand_name" },
-    { label: "Price", property: "release_price" },
+    { label: "Brand", property: "BrandName" },
+    { label: "Price", property: "ReleasePrice" },
   ] as TableColumn[];
 
   return (

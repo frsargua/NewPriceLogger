@@ -1,8 +1,8 @@
 import {
   createContext,
   useCallback,
-  useMemo,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -13,9 +13,15 @@ import {
   SortingType,
   TableData,
 } from "../types/contextTypes";
+import Enumerable from "linq";
 import { fetchData } from "../utils/fetch";
 import { getAllPhones } from "../utils/URIs";
-import Enumerable from "linq";
+import {
+  filterPhones,
+  sortPhones,
+  getSortDirection,
+  sortedRows,
+} from "../utils/helperfuntions";
 
 export const SortedPhonesDataContext =
   createContext<PhonesCollectionContextProps>({
@@ -62,24 +68,17 @@ export function SortedPhonesDataProvider({ children }: ChildrenProps) {
   };
 
   const sortBy = useCallback((propertyName: keyof TableData) => {
-    // Update the sort configuration state
     setSortConfig((prevConfig) => {
-      // Check if there's already a configuration for the given property
-      const existingConfigIndex = prevConfig.findIndex(
+      const configIndex = prevConfig.findIndex(
         (config) => config.propertyName === propertyName
       );
-
-      if (existingConfigIndex > -1) {
-        const currentSortType = prevConfig[existingConfigIndex].sortType;
-
+      if (configIndex > -1) {
+        const currentSortType = prevConfig[configIndex].sortType;
         const updatedConfig = [...prevConfig];
-
-        updatedConfig.splice(existingConfigIndex, 1);
-
+        updatedConfig.splice(configIndex, 1);
         if (currentSortType === SortingType.Descending) {
           updatedConfig.push({ propertyName, sortType: SortingType.Ascending });
         }
-
         return updatedConfig;
       } else {
         return [
@@ -91,52 +90,44 @@ export function SortedPhonesDataProvider({ children }: ChildrenProps) {
   }, []);
 
   const getSortDirection = (property: keyof TableData) => {
-    const sortPropertyConfig = sortConfig.find(
-      (config) => config.propertyName === property
+    const config = sortConfig.find(
+      (sortConfig) => sortConfig.propertyName === property
     );
-
-    if (sortPropertyConfig) {
-      if (sortPropertyConfig.sortType === SortingType.Descending) {
-        return <i className="bi bi-arrow-down"></i>;
-      } else {
-        return <i className="bi bi-arrow-up"></i>;
-      }
+    if (config) {
+      return config.sortType === SortingType.Descending ? (
+        <i className="bi bi-arrow-down"></i>
+      ) : (
+        <i className="bi bi-arrow-up"></i>
+      );
     }
-
     return null;
   };
 
-  const sorted = useMemo(() => {
-    // Start with all phones, ordering them with a constant so they remain in their original order
-    let sortedPhones = Enumerable.from(phones).orderBy(() => 1);
-
-    // Iterate over each configuration in the sort config array
-    sortConfig.forEach((currentSortConfig) => {
-      if (currentSortConfig.sortType === SortingType.Ascending) {
-        sortedPhones = sortedPhones
+  const sortedRows = useMemo(() => {
+    let sorted = Enumerable.from(phones).orderBy(() => 1);
+    sortConfig.forEach((sortConfig) => {
+      if (sortConfig.sortType === SortingType.Ascending) {
+        sorted = sorted
           .thenBy((dataRow) =>
-            dataRow[currentSortConfig.propertyName] === null ? -1 : 1
+            dataRow[sortConfig.propertyName] === null ? -1 : 1
           )
-          .thenBy((dataRow) => dataRow[currentSortConfig.propertyName]);
+          .thenBy((dataRow) => dataRow[sortConfig.propertyName]);
       } else {
-        sortedPhones = sortedPhones
+        sorted = sorted
           .thenByDescending((dataRow) =>
-            dataRow[currentSortConfig.propertyName] === null ? -1 : 1
+            dataRow[sortConfig.propertyName] === null ? -1 : 1
           )
-          .thenByDescending(
-            (dataRow) => dataRow[currentSortConfig.propertyName]
-          );
+          .thenByDescending((dataRow) => dataRow[sortConfig.propertyName]);
       }
     });
-
-    return sortedPhones.toArray();
+    return sorted.toArray();
   }, [sortConfig]);
 
   useEffect(() => {
-    if (sorted.length > 0) {
-      setPhones(sorted);
+    if (sortedRows.length > 0) {
+      setPhones(sortedRows);
     }
-  }, [sorted]);
+  }, [sortedRows]);
 
   const value: PhonesCollectionContextProps = {
     phones,

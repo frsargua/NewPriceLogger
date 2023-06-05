@@ -98,8 +98,8 @@ export type MyParams = {
 // Sorting
 
 export interface TableData {
-  brand_name: string;
-  release_price: string;
+  BrandName: string;
+  ReleasePrice: string;
 }
 
 export interface SortingConfiguration {
