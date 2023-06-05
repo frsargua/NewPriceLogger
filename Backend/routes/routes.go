@@ -20,6 +20,7 @@ func Routes(router *mux.Router) {
 	phoneRouter.HandleFunc("/{id}", phoneController.Destroy).Methods("DELETE")
 	phoneRouter.HandleFunc("/store/image", phoneController.UploadImage).Methods("POST")
 	phoneRouter.HandleFunc("/chat", phoneController.WhatIsThe).Methods("POST")
+	phoneRouter.HandleFunc("/fakeimage", phoneController.GetFakeImage).Methods("POST")
 
 	// PricesController routes
 	priceController := controllers.PricesController{}

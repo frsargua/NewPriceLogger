@@ -118,7 +118,7 @@ export default function PhonesDataTable() {
                   <Link to={`/update-phone/${row.ID}`}>Update</Link>
                 </Button>
                 <Button>
-                  <Link to={`/prices/${row.BrandName}/${row.ID}`}>Stats</Link>
+                  <Link to={`/prices/${row.Model}/${row.ID}`}>Stats</Link>
                 </Button>
                 <Button
                   onClick={() => {

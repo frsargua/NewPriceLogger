@@ -33,6 +33,9 @@ export function deletePhoneById(phoneId: string): string {
 export function getChats(): string {
   return `${base}/phones/chat`;
 }
+export function getImage(): string {
+  return `${base}/phones/fakeimage`;
+}
 
 // Prices table URIsw
 

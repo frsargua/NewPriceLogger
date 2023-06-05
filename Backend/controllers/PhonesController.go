@@ -251,6 +251,51 @@ func (pc *PhonesController) WhatIsThe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonResponse)
 }
+func (pc *PhonesController) GetFakeImage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var phoneModel PhoneModel
+	err := json.NewDecoder(r.Body).Decode(&phoneModel)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	client := openai.NewClient(os.Getenv("OPEN_AI"))
+
+	content := fmt.Sprintf(` an %s smartphone in a white background`, phoneModel.Model)
+
+	ctx := context.Background()
+
+	// Sample image by link
+	reqUrl := openai.ImageRequest{
+		Prompt:         content,
+		Size:           openai.CreateImageSize512x512,
+		ResponseFormat: openai.CreateImageResponseFormatURL,
+		N:              1,
+	}
+
+	respUrl, err := client.CreateImage(ctx, reqUrl)
+	if err != nil {
+		fmt.Printf("Image creation error: %v\n", err)
+		return
+	}
+
+	response := struct {
+		URL string `json:"url"`
+	}{
+		URL: respUrl.Data[0].URL,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		fmt.Printf("JSON encoding error: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}
 
 func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -276,7 +321,6 @@ func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
 }
 
 func (pc *PhonesController) InitialiseFirebase() {
