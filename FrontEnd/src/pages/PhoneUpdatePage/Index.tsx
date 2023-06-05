@@ -30,7 +30,11 @@ export default function PhoneUpdatePage() {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = event.target;
-    setPhoneFields((prev) => ({ ...prev, [name]: value }));
+    if (name == "ReleasePrice") {
+      setPhoneFields((prev) => ({ ...prev, [name]: Number(value) }));
+    } else {
+      setPhoneFields((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -38,20 +42,13 @@ export default function PhoneUpdatePage() {
 
     try {
       if (id) {
-        // await axios.put(
-        //   updatePhoneById(id),
-        //   { ...phoneFields },
-        //   { withCredentials: true }
-        // );
+        const response = await axios.put(
+          updatePhoneById(id),
+          { ...phoneFields },
+          { withCredentials: true }
+        );
+        console.log(response);
 
-        await fetch(updatePhoneById(id), {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ...phoneFields }),
-          credentials: "include",
-        });
         fetchPhones();
         navigate(`/`, { replace: true });
       } else {

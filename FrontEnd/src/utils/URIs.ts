@@ -1,4 +1,4 @@
-let base = "http://localhost:8080";
+let base = "http://localhost:8081";
 
 // Brands URIs
 export function getBrands(): string {
@@ -41,7 +41,7 @@ export function getAllPricesById(id: string): string {
 }
 
 export function getAllPriceById(id: string): string {
-  return `${base}/prices/${id}`;
+  return `${base}/prices/single/${id}`;
 }
 
 export function createPrice(): string {
@@ -53,7 +53,7 @@ export function deletePriceById(id: string): string {
 }
 
 export function updatePriceById(id: string, model: string): string {
-  return `${base}/prices/${model}/${id}`;
+  return `${base}/prices/update/${id}`;
 }
 
 // News

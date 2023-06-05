@@ -16,7 +16,7 @@ export default function NavigationBar() {
       <div className="container">
         <Link className="navbar-brand" to="/">
           <i className="bi bi-house primarys"></i>
-          <span className="brand-text">HOME</span>
+          <span className="brand-text">PricingHub</span>
         </Link>
         <button
           className="navbar-toggler "

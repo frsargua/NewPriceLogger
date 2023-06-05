@@ -15,6 +15,7 @@ import { MyParams } from "../../types/generalTypes";
 import { useParams } from "react-router-dom";
 import { deletePriceById } from "../../utils/URIs";
 import { CompareContext } from "../../context/CompareContext";
+import axios from "axios";
 
 export default function TableOfPrices({ model }: { model: string }) {
   const { id: phoneId } = useParams<keyof MyParams>() as MyParams;
@@ -45,12 +46,9 @@ export default function TableOfPrices({ model }: { model: string }) {
 
   async function deletePrice(id: Number) {
     try {
-      let response = await fetch(deletePriceById(String(id)), {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+      let response = await axios.delete(deletePriceById(String(id)));
 
-      if (response.ok) {
+      if (response.status == 200) {
         updatePhonePrices(String(phoneId));
         updateList(String(phoneId));
       }

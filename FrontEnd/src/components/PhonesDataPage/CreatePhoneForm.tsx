@@ -12,7 +12,7 @@ export default function CreatePhoneForm() {
   const { fetchPhones } = useContext(SortedPhonesDataContext);
   const emptyPhoneObject = {
     BrandName: "",
-    ReleaseDate: dayjs().format("YYYY-MM-DD"),
+    ReleaseDate: new Date().toISOString(),
     Model: "",
     ReleasePrice: null,
   };
@@ -53,17 +53,19 @@ export default function CreatePhoneForm() {
     try {
       newPhone.ReleasePrice = parseInt(newPhone.ReleasePrice);
       const response = await axios.post(createPhone(), { ...newPhone });
-      const { id, ReleaseDate, release_price } = response.data;
-      fetchPhones();
-      clearStates();
+
+      const { ID, ReleaseDate, ReleasePrice } = response.data;
       await axios.post(createPrice(), {
-        model_id: id,
-        date_added: ReleaseDate,
-        price: release_price,
+        ModelID: ID,
+        DateAdded: ReleaseDate,
+        Price: ReleasePrice,
       });
 
+      fetchPhones();
+      clearStates();
+
       setError(false);
-    } catch (err) {
+    } catch (err: any) {
       if (err.response?.status === 422) {
         setError(err.response.data.message);
       }

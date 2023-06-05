@@ -125,18 +125,26 @@ func (pc *PhonesController) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(models.DB.Create(&phone).Error)
+    if err := models.DB.Create(&phone).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    // Return the created phone in the response
+    response, err := json.Marshal(phone)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
 
 func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+	println("Hey")
 	vars := mux.Vars(r)
 	phoneID := vars["id"]
 	var existingPhone models.Phone
@@ -145,18 +153,21 @@ func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+println("one")
 
 	if err := models.DB.First(&existingPhone, phoneID).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+println("two")
 	if err := models.DB.Delete(&existingPhone).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(existingPhone)
+	println("three")
+	// json.NewEncoder(w).Encode(existingPhone)
+		w.WriteHeader(http.StatusOK)	
 
 }
 

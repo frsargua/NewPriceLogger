@@ -98,6 +98,7 @@ func (pc *PricesController) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Update the existing phone object with the new data
 	existingPrice.Price = updatedPrice.Price
+	existingPrice.DateAdded = updatedPrice.DateAdded
 
 	if err := models.DB.Save(&existingPrice).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

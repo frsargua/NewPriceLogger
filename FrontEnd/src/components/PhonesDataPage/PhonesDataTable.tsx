@@ -45,13 +45,9 @@ export default function PhonesDataTable() {
 
   async function deletePhone(id: Number) {
     try {
-      // let response = await fetch(deletePhoneById(String(id)), {
-      //   method: "DELETE",
-      //   headers: { "Content-Type": "application/json" },
-      // });
       let response = await axios.delete(deletePhoneById(String(id)));
 
-      if (response.data) {
+      if (response.status == 200) {
         fetchPhones();
       }
     } catch (error) {
