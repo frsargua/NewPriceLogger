@@ -15,5 +15,7 @@ type Price struct {
 	UpdatedAt time.Time
 }
 
-
-// Model     Phone `gorm:"foreignkey:ModelID"`
+type UpdatedPrice struct {
+	DateAdded time.Time `validate:"required" error:"Date Added is required"`
+	Price     float64   `validate:"required,min=10,max=3000" error:"Price must be between 10 and 3000"`
+}

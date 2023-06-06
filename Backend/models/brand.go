@@ -7,5 +7,5 @@ type Brand struct {
 	Brand     string `gorm:"unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Phones    []Phone `gorm:"foreignKey:BrandName;references:Brand"`
+	Phones    []Phone `gorm:"foreignKey:BrandName;references:Brand;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

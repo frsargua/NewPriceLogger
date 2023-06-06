@@ -85,9 +85,7 @@ func (pc *PricesController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updatedPrice models.Price
-
-
+	var updatedPrice models.UpdatedPrice
 
 	err := json.NewDecoder(r.Body).Decode(&updatedPrice)
 	if err != nil {
@@ -103,7 +101,6 @@ func (pc *PricesController) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 
 	var existingPrice models.Price
 	if err := models.DB.First(&existingPrice, priceID).Error; err != nil {
@@ -137,7 +134,7 @@ func (pc *PricesController) Store(w http.ResponseWriter, r *http.Request) {
 	// Validate brand field
 	err = validatePrice(phonePrice)
 
-	fmt.Println(err);
+	fmt.Println(err)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -178,7 +175,7 @@ func (pc *PricesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(existingPrice)
 }
 
-func validatePrice(price models.Price) error {
+func validatePrice(price any) error {
 	validate := validator.New()
 
 	err := validate.Struct(price)

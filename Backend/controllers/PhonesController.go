@@ -5,23 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
-	firebase "firebase.google.com/go"
 	"github.com/frsargua/NewPriceLogger/Backend/models"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 	"github.com/sashabaranov/go-openai"
-	"google.golang.org/api/option"
 )
 
 type PhonesController struct {
-	App *firebase.App
+	// App *firebase.App
 }
 
 type PhoneModel struct {
@@ -91,7 +86,7 @@ func (pc *PhonesController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updatedPhone models.Phone
+	var updatedPhone models.UpdatePhone
 	err := json.NewDecoder(r.Body).Decode(&updatedPhone)
 	if err != nil {
 		http.Error(w, "Fail to get body", http.StatusBadRequest)
@@ -113,7 +108,6 @@ func (pc *PhonesController) Update(w http.ResponseWriter, r *http.Request) {
 	// Update the existing phone object with the new data
 	existingPhone.BrandName = updatedPhone.BrandName
 	existingPhone.Model = updatedPhone.Model
-	existingPhone.ReleaseDate = updatedPhone.ReleaseDate
 	existingPhone.ReleasePrice = updatedPhone.ReleasePrice
 
 	if err := models.DB.Save(&existingPhone).Error; err != nil {
@@ -160,54 +154,55 @@ func (pc *PhonesController) Store(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
-func (pc *PhonesController) UploadImage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
-	file, fileHeader, err := r.FormFile("image")
+// func (pc *PhonesController) UploadImage(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "application/json")
 
-	if err != nil {
-		http.Error(w, "Failed to get filed to be uploaded", http.StatusBadRequest)
-		return
-	}
-	fileName := fileHeader.Filename
+// 	file, fileHeader, err := r.FormFile("image")
 
-	client, err := pc.App.Storage(r.Context())
-	if err != nil {
-		http.Error(w, "Failed to initialize Firebase Storage client", http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		http.Error(w, "Failed to get filed to be uploaded", http.StatusBadRequest)
+// 		return
+// 	}
+// 	fileName := fileHeader.Filename
 
-	bucket, err := client.DefaultBucket()
-	if err != nil {
-		http.Error(w, "Failed to get default bucket", http.StatusInternalServerError)
-		return
-	}
+// 	client, err := pc.App.Storage(r.Context())
+// 	if err != nil {
+// 		http.Error(w, "Failed to initialize Firebase Storage client", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	obj := bucket.Object(fileName)
+// 	bucket, err := client.DefaultBucket()
+// 	if err != nil {
+// 		http.Error(w, "Failed to get default bucket", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	wc := obj.NewWriter(r.Context())
-	defer wc.Close()
+// 	obj := bucket.Object(fileName)
 
-	_, err = io.Copy(wc, file)
-	if err != nil {
-		http.Error(w, "Failed to upload image", http.StatusInternalServerError)
-		return
-	}
+// 	wc := obj.NewWriter(r.Context())
+// 	defer wc.Close()
 
-	attrs, err := obj.Attrs(r.Context())
-	if err != nil {
-		http.Error(w, "Failed to get object attributes", http.StatusInternalServerError)
-		return
-	}
+// 	_, err = io.Copy(wc, file)
+// 	if err != nil {
+// 		http.Error(w, "Failed to upload image", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	imageURL := attrs.MediaLink
+// 	attrs, err := obj.Attrs(r.Context())
+// 	if err != nil {
+// 		http.Error(w, "Failed to get object attributes", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	log.Printf("Image uploaded: %s", imageURL)
+// 	imageURL := attrs.MediaLink
 
-	// Send a response with the image URL
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(imageURL))
-}
+// 	log.Printf("Image uploaded: %s", imageURL)
+
+// 	// Send a response with the image URL
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write([]byte(imageURL))
+// }
 
 func (pc *PhonesController) WhatIsThe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -299,22 +294,21 @@ func (pc *PhonesController) GetFakeImage(w http.ResponseWriter, r *http.Request)
 
 func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	println("Hey")
 	vars := mux.Vars(r)
 	phoneID := vars["id"]
 	var existingPhone models.Phone
 
 	if err := validateId(phoneID); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
-	println("one")
 
 	if err := models.DB.First(&existingPhone, phoneID).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	println("two")
+
 	if err := models.DB.Delete(&existingPhone).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -323,18 +317,18 @@ func (pc *PhonesController) Destroy(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (pc *PhonesController) InitialiseFirebase() {
+// func (pc *PhonesController) InitialiseFirebase() {
 
-	opt := option.WithCredentialsFile("./serviceAccountKey.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	opt := option.WithCredentialsFile("./serviceAccountKey.json")
+// 	app, err := firebase.NewApp(context.Background(), nil, opt)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-	pc.App = app
-}
+// 	pc.App = app
+// }
 
-func validatePhone(phone models.Phone) error {
+func validatePhone(phone any) error {
 	validate := validator.New()
 
 	err := validate.Struct(phone)
@@ -354,9 +348,9 @@ func validateId(phoneId string) error {
 		return errors.New("Missing or empty Id")
 	}
 
-	if _, err := strconv.Atoi(phoneId); err != nil {
-		return errors.New("Invalid Id format")
-	}
+	// if _, err := strconv.Atoi(phoneId); err != nil {
+	// 	return errors.New("Invalid Id format")
+	// }
 
 	return nil
 }

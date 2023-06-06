@@ -52,18 +52,19 @@ func (bc *BrandControllers) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    result := models.DB.Create(&brand)
+	result := models.DB.Create(&brand)
 	if result.Error != nil {
 		http.Error(w, "Brand might not be unique", http.StatusInternalServerError)
 		return
-    }
+	}
 
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(brand)
+
 }
 
 func validateBrand(brand models.Brand) error {
-    //  brandDB := models.Brand{Brand: brand.Brand}
-
+	//  brandDB := models.Brand{Brand: brand.Brand}
 
 	if brand.Brand == "" {
 		return errors.New("Brand name cannot be empty")
@@ -72,7 +73,6 @@ func validateBrand(brand models.Brand) error {
 	if len(brand.Brand) < 3 || len(brand.Brand) > 30 {
 		return errors.New("Brand name should be between 3 and 30 characters")
 	}
-
 
 	return nil
 }
